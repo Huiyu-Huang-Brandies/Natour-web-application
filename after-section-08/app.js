@@ -44,7 +44,7 @@ app.use(mongoSanitize()); // remove dollar signs and dots
 // Data sanitization against XSS
 app.use(xss());
 
-// Prevent parameter pullution
+// Prevent parameter pollution
 app.use(
   hpp({
     whitelist: [
