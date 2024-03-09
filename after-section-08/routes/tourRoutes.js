@@ -1,8 +1,22 @@
 const express = require('express');
 const tourController = require('./../controllers/tourController');
 const authController = require('../controllers/authController');
+const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
+
+// nested routes
+// POST /tour/234fad4/reviews
+// GET /tour/234fad4/reviews
+
+// router
+//   .route('/:tourId/reviews')
+//   .post(
+//     authController.protect,
+//     authController.restrictTo('user'),
+//     reviewController.createReview
+//   );
+router.use('/:tourId/reviews', reviewRouter);
 
 // router.param('id', tourController.checkID);
 
