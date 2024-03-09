@@ -34,6 +34,23 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-const Review = mongoose.model('Review', reviewSchema);
+reviewSchema.pre(/^find/, function(next) {
+  // need to populate twice for two path, these will add extra time on the query
+  // this.populate({
+  //   path: 'user',
+  //   select: 'name photo'
+  // }).populate({
+  //   path: 'tour',
+  //   select: 'name'
+  // });
 
+  this.populate({
+    path: 'user',
+    select: 'name photo'
+  });
+
+  next();
+});
+
+const Review = mongoose.model('Review', reviewSchema);
 module.exports = Review;
