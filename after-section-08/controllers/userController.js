@@ -1,6 +1,7 @@
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -10,12 +11,18 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
-exports.getAllUsers = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find();
+
+  // SEND RESPONSE
+  res.status(200).json({
+    status: 'success',
+    results: users.length,
+    data: {
+      users
+    }
   });
-};
+});
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1) create error is user POSTs password data
@@ -73,9 +80,7 @@ exports.updateUser = (req, res) => {
     message: 'This route is not yet defined!'
   });
 };
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
-  });
-};
+
+// do not update password with this. only for Admin using
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);
