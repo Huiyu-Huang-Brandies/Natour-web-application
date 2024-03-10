@@ -111,6 +111,16 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+/* 
+need to study the access pattern to decide the indexing.
+balance the frequency of queries using that exact field with the cost 
+of maintaining this index, and the read-write pattern of the resource.
+1: ascending order; -1: decreasing
+*/
+// tourSchema.index({ price: 1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
