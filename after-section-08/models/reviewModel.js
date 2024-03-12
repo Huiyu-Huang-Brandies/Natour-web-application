@@ -35,6 +35,9 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+// each combination of tour and user is unique
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 reviewSchema.pre(/^find/, function(next) {
   // need to populate twice for two path, these will add extra time on the query
   // this.populate({
