@@ -19,7 +19,7 @@ const createSendToken = (user, statusCode, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    // secure: true, we only want that in produciton mode
+    // secure: true (we only want that in produciton mode)
     httpOnly: true
   };
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
@@ -66,6 +66,16 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+// send back a new cookie with the exact same name, but without the token
+// so it would overwrite the current cookie, so the user cannot identified as login
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) getting token and check of it's there
   let token;
@@ -104,30 +114,35 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 // only for rendered pages, no errors! will always use cookies instead of authtication header
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   // 1) verify user
   if (req.cookie.jwt) {
-    const decoded = await promisify(jwt.verify)(
-      req.cookie.jwt,
-      process.env.JWT_SECRET
-    );
+    // try catch the error locally
+    try {
+      const decoded = await promisify(jwt.verify)(
+        req.cookie.jwt,
+        process.env.JWT_SECRET
+      );
 
-    // 2) check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
+      // 2) check if user still exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next();
+      }
+      // 3) check if user changed password after the JWT(token) was issued
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // There is a logged in user, make the user access to our template
+      res.locals.user = currentUser;
+      return next();
+    } catch (err) {
       return next();
     }
-    // 4) check if user changed password after the JWT(token) was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-      return next();
-    }
-
-    // There is a logged in user, make the user access to our template
-    res.locals.user = currentUser;
-    return next();
   }
   next();
-});
+};
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
