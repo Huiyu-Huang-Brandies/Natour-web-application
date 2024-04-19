@@ -3,12 +3,12 @@ const viewController = require('../controllers/viewsController');
 const authController = require('../controllers/authController');
 
 const router = express.Router();
-router.get('/', (req, res) => {
-  res.status(200).render('base', {
-    tour: 'The forest Hiker',
-    user: 'Helen'
-  });
-});
+// router.get('/', (req, res) => {
+//   res.status(200).render('base', {
+//     tour: 'The forest Hiker',
+//     user: 'Helen'
+//   });
+// });
 
 // router.use(authController.isLoggedIn);
 

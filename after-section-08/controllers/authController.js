@@ -84,7 +84,10 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
+
   // console.log(token);
   if (!token) {
     return next(
@@ -117,11 +120,13 @@ exports.protect = catchAsync(async (req, res, next) => {
 // only for rendered pages, no errors! will always use cookies instead of authtication header
 exports.isLoggedIn = async (req, res, next) => {
   // 1) verify user
-  if (req.cookie.jwt) {
+  // console.log('req.cookies is' + req.cookies);
+  // console.log('req.cookies.jwt is' + req.cookie.jwt);
+  if (req.cookies.jwt) {
     // try catch the error locally
     try {
       const decoded = await promisify(jwt.verify)(
-        req.cookie.jwt,
+        req.cookies.jwt,
         process.env.JWT_SECRET
       );
 
